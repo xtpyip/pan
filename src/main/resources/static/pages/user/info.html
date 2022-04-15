@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>简易楼盘销售网</title>
+    <link rel="stylesheet" href="../../plugins/elementui/index.css">
+    <link rel="stylesheet" href="../../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .userMessage {
+            margin: 100px auto;
+            height: 350px;
+            width: 500px;
+            background-color: #8c939d;
+            font-size: 21px;
+        }
+        .userMessage p {
+            font-weight: bold;
+            margin-left: 30px;
+        }
+        .userPutHeader{
+            /*background-color: red;*/
+            margin: 5px 0 5px 10px;
+            padding-bottom: 10px;
+        }
+        .userPutHeader p {
+            padding: 3px 0 3px 75px;
+            font-weight: bold;
+        }
+        .userPutHeader label {
+            margin-left: 40px;
+            margin-bottom: 9px;
+        }
+        .userPutHeader input {
+            margin: 3px 0;
+            padding-left: 10px;
+            font-size: 21px;
+        }
+        .userPutButton {
+            margin: 15px 0 5px 25px;
+        }
+        .userPutButton button {
+            margin: 20px 35px;
+        }
+        .userPutButton label {
+            margin: 8px 15px;
+        }
+        .content-header h1 {
+            text-align: center;
+            margin-left: 10px;
+        }
+        .myHeader {
+            height: 40px;
+            /*background-color: pink;*/
+        }
+        .headerNav {
+            /*background-color: black;*/
+            float: left;
+            width: 800px;
+        }
+        .headerNav label {
+            float: left;
+            margin-left: 40px;
+        }
+        .headerInfo{
+            /*background-color: blue;*/
+            /*height: 40px;*/
+            float: right;
+            width: 300px;
+        }
+        a,label {
+            line-height: 40px;
+        }
+        a:hover{
+            color: black;
+        }
+        img {
+            height: 40px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="content-header">
+            <h1>易楼网在线销售系统</h1>
+        </div>
+    <div class="myHeader">
+            <div class="headerNav">
+                <label><a href="main.html">首页</a></label>
+                <label><a href="cart.html">我的购物车</a></label>
+                <label><a href="info.html">个人信息</a></label>
+                <label><a href="#">关于我们</a></label>
+            </div>
+            <div class="headerInfo">
+                <label style="float:right;margin-right: 20px;margin-bottom: 10px;">{{username}}</label>
+                <label style="float:right;margin-right: 20px;margin-bottom: 10px;"><img :src="uHead" alt="头像"></img></label>
+            </div>
+        </div>
+    <div class="userMessage">
+        <div  class="userPutHeader">
+            <p>我的个人信息</p>
+            <form id="user-put-form">
+                <label>用户: &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="text" name="name" id="name" readonly v-model="userInfo.name">
+                </label><br>
+                <label>密码: &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="password" name="password" id="password" required v-model="userInfo.password">
+                </label><br>
+                <label>年龄: &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="number" name="age" id="age" required v-model="userInfo.age">
+                </label><br>
+                <label>电话: &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="tel" name="phone" id="phone" required v-model="userInfo.phone">
+                </label><br>
+            </form>
+        </div>
+        <div class="userPutButton">
+            <button @click="changeInfo">更改信息</button>
+            <button @click="gotoMain">取消</button>
+            <form id="form-change-avatar"  role="form">
+                <div class="form-group">
+                    <label class="col-md-2 control-label">选择头像:</label>
+                    <div class="clearfix"></div>
+                    <div class="col-md-offset-2 col-md-4">
+                        <input type="file" name="file" accept="image/png">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <input type="button" id="btn-change-avatar" class="btn btn-primary" value="上传" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="content-header">
+    <h3 align="center">请联系我：188 xxxx xxxx</h3>
+</div>
+</body>
+<script src="../../js/vue.js"></script>
+<script src="../../plugins/elementui/index.js"></script>
+<script type="text/javascript" src="../../js/jquery.min.js"></script>
+<script src="../../js/axios-0.18.0.js"></script>
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            dataList:[],
+            userInfo: [],
+            username: '',
+            uHead: '',
+            uid: '',
+        },
+        created(){
+            this.username = JSON.parse(sessionStorage.getItem("username"));
+            this.uid = JSON.parse(sessionStorage.getItem("uid"));
+            this.uHead = JSON.parse(sessionStorage.getItem("uHead"));
+            this.getAll()
+        },
+        methods: {
+           getAll(){
+               // console.log(JSON.parse(sessionStorage.getItem("uid")));
+               axios.get("/user/"+this.uid).then((res)=>{
+                   // console.log(res.data.e);
+                   this.userInfo = res.data.e;
+               });
+           },
+           changeInfo(){
+               console.log(this.userInfo)
+               if(this.userInfo.age>18 && this.userInfo.age < 100
+                   && this.userInfo.password.trim() && this.isPhoneNo(this.userInfo.phone)){
+                   axios.put("/users",this.userInfo).then((res)=>{
+                       // console.log(res)
+                       alert("信息修改成功！！！")
+                       location.href = "main.html"
+                   })
+               }else{
+                   alert("信息书写有误，请及时更改！！")
+               }
+
+           },
+           isPhoneNo(phone) {
+                const pattern = /^1[34578]\d{9}$/;
+                return pattern.test(phone);
+            },
+           gotoMain(){
+               // console.log("hhh")
+               location.href = "main.html"
+            }
+        }
+    })
+</script>
+<script>
+    $("#btn-change-avatar").click(function () {
+        $.ajax({
+            url: "/users/change_avatar",
+            type: "POST",
+            data: new FormData($("#form-change-avatar")[0]),
+            processData: false,// processData处理数据
+            contentType: false, // contentType发送数据的格式
+            dataType: "JSON",
+            success: function (json) {
+                if (json.code === 200) {
+                    alert("修改成功");
+                    console.log(json.e)
+                    window.sessionStorage.setItem("uHead",JSON.stringify(json.e.img));
+                    location.href = "main.html"
+                } else {
+                    alert("修改失败！" + json.message);
+                }
+            }
+        });
+    });
+
+</script>
+</html>

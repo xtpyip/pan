@@ -1,0 +1,24 @@
+server:
+  port: 81
+
+
+spring:
+  datasource:
+    druid:
+      password: 10086
+      username: root
+      url: jdbc:mysql://localhost/pan?characterEncoding=utf8&useSSL=false&serverTimezone=UTC&rewriteBatchedStatements=true
+      driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+mybatis-plus:
+  global-config:
+    db-config:
+      id-type: auto
+      table-prefix: tb_
+  #spring.servlet.multipart.maxFileSize=10MB
+  #spring.servlet.multipart.maxRequestSize=10MB
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

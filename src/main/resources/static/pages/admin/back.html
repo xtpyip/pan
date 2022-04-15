@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- 页面meta -->
+
+    <meta charset="utf-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>简易楼盘销售网</title>
+
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+    <!-- 引入样式 -->
+
+    <link rel="stylesheet" href="../../plugins/elementui/index.css">
+
+    <link rel="stylesheet" href="../../plugins/font-awesome/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="../../css/style.css">
+
+
+</head>
+<body>
+<div class="content-header">
+    <h3 align="center">易楼网后台管理中心</h3>
+    <a href="product.html">楼盘管理</a>
+    <a href="user.html">用户管理</a>
+    <a href="address.html">地址管理</a>
+    <a href="order.html">订单管理</a>
+    <h4 style="display: inline;font-width: 18px; ">用户反馈</h4>
+</div>
+<div id="app">
+    <h5 style="float: right;margin-right: 50px">{{adminName}}</h5>>
+    <div class="app-container">
+        <div class="box">
+            <div class="filter-container">
+                <el-form :inline="true" :model="formInline" class="demo-form-inline">
+                    <el-form-item>
+                      <el-input v-model="formInline.description" placeholder="用户反馈信息"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                      <el-button type="primary" @click="getAll()">查询</el-button>
+                    </el-form-item>
+
+                  </el-form>
+            </div>
+
+            <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+
+                <el-table-column type="index" align="center" label="序号"></el-table-column>
+                <el-table-column prop="description" label="反馈信息" align="center"></el-table-column>
+
+            </el-table>
+
+            <!--分页组件-->
+            <div class="pagination-container">
+
+                <el-pagination
+                        class="pagiantion"
+
+                        @current-change="handleCurrentChange"
+
+                        :current-page="pagination.currentPage"
+
+                        :page-size="pagination.pageSize"
+
+                        layout="total, prev, pager, next, jumper"
+
+                        :total="pagination.total">
+
+                </el-pagination>
+            </div>
+
+
+
+
+        </div>
+
+    </div>
+
+
+</div>
+<div class="content-header">
+    <h3 align="center">请联系我：188 xxxx xxxx</h3>
+</div>
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="../../js/vue.js"></script>
+
+<script src="../../plugins/elementui/index.js"></script>
+
+<script type="text/javascript" src="../../js/jquery.min.js"></script>
+
+<script src="../../js/axios-0.18.0.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data:{
+            formInline: { //作模糊查询时使用
+                description: ''
+            },
+            dataList: [],//当前页要展示的列表数据
+            dialogFormVisible: false,//添加表单是否可见
+            dialogFormVisible4Edit:false,//编辑表单是否可见
+            formData: {},//表单数据
+            adminName: '',
+            rules: {//校验规则
+                address: [{ required: true, message: '用户收货地址为必填项', trigger: 'blur' }],
+                id: [{ required: true, message: '用户id为必填项', trigger: 'blur' }],
+                flag: [{ required: true, message: '用户默认地址为必填项', trigger: 'blur' }]
+            },
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize:10,//每页显示的记录数
+                total:0,//总记录数
+                description: ''
+            }
+        },
+
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            //页面加载完毕后调用getAll函数
+            this.adminName = JSON.parse(sessionStorage.getItem("adminName"));
+            this.getAll();
+        },
+
+        methods: {
+            //列表
+            getAll() {
+                console.log("run")
+                param = "?description="+this.formInline.description;
+                console.log(param);
+
+                //  console.log("run...");//发送异步请求
+                // axios.get("/addresses").then((res)=>{
+                //     //console.log(res.data);
+                //     this.dataList = res.data.e;
+                // });
+                axios.get("/backs/"+this.pagination.currentPage+"/"+this.pagination.pageSize+param).then((res)=>{
+                    //console.log(res.data);
+                    this.pagination.pageSize=res.data.e.size;
+                    this.pagination.currentPage=res.data.e.current;
+                    this.pagination.total=res.data.e.total;
+                    this.dataList = res.data.e.records;
+                });
+            },
+
+            //弹出添加窗口
+            handleCreate() {
+            },
+
+            //重置表单
+            resetForm() {
+            },
+            //添加
+            handleAdd () {
+            },
+
+            //取消
+            cancel(){
+
+            },
+            // 删除
+            handleDelete(row) {
+
+            },
+
+            //弹出编辑窗口
+            handleUpdate(row) {
+            },
+
+            //修改
+            handleEdit() {
+            },
+
+            //分页查询
+
+            //切换页码
+            handleCurrentChange(currentPage) {
+                // //修改页码值为当前选中的页码值
+                 this.pagination.currentPage = currentPage;
+                // //执行查询
+                 this.getAll();
+            }
+            //条件查询
+        }
+    })
+</script>
+<script>
+    if(!JSON.parse(sessionStorage.getItem("adminName"))){
+        alert("请先登陆");
+        location.href="../login.html";
+    }
+</script>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>简易楼盘销售网</title>
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <style>
+        .bigHeader {
+            border: 1px solid #807c7c;
+            background-color: rgb(241,244,243);
+            height: 280px;
+            width: 340px;
+            margin: 100px auto;
+        }
+        .adminLoginHeader{
+            /*background-color: red;*/
+            margin: 5px 0 5px 10px;
+            padding-bottom: 10px;
+        }
+        .adminLoginHeader p {
+            padding: 3px 0 3px 75px;
+            font-weight: bold;
+        }
+        .adminLoginHeader label {
+            /*background-color: black;*/
+            margin-left: 40px;
+            margin-bottom: 5px;
+        }
+        .adminLoginHeader input {
+            margin: 3px 0;
+            padding-left: 10px;
+        }
+        .adminLoginButton {
+            margin: 15px 0 5px 25px;
+        }
+        .adminLoginButton button {
+            margin: 0 15px;
+        }
+    </style>
+</head>
+<body  style="background-color: #8c939d">
+<div  class="bigHeader">
+    <div class="adminLoginHeader">
+        <p>欢迎来到易楼网注册中心</p>
+        <form id="user-login-form">
+            <label>用户: &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="text" name="name" id="name" required placeholder="请输入你的用户名">
+            </label><br>
+            <label>密码: &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="password" name="password" id="password" required placeholder="请输入你的密码">
+            </label><br>
+            <label>密码: &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="password" name="password" id="password2" required placeholder="请输入你的密码">
+            </label><br>
+            <label>年龄: &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="number" name="age" id="age" required placeholder="请输入你的年龄18-100">
+            </label><br>
+            <label>性别: &nbsp;&nbsp;&nbsp;&nbsp;
+                男: <input type="radio" name="sex" value="0"  checked>
+                女: <input type="radio" name="sex" value="1" >
+            </label><br>
+            <label>电话: &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="tel" name="phone" id="phone" required placeholder="请输入换的电话号码">
+            </label><br>
+        </form>
+    </div>
+    <div class="adminLoginButton">
+        <button id="login-btn" >登陆</button>
+        <button id="register-btn">注册</button>
+        <button id="adm-log-btn">后台登陆</button>
+    </div>
+
+</div>
+</body>
+<script>
+    function isPhoneNo(phone) {
+        var pattern = /^1[34578]\d{9}$/;
+        return pattern.test(phone);
+    }
+    $('#login-btn').click(function () {
+        location.href="index.html"
+    })
+    $('#adm-log-btn').click(function () {
+        location.href='login.html'
+    })
+    $("#register-btn").click(function () {
+        const name = $('#name').val();
+        const password = $('#password').val();
+        const password2 = $('#password2').val();
+        const phone = $('#phone').val();
+        const age = $('#age').val();
+        if(name.trim() && password.trim() && isPhoneNo(phone) && age > 18 && age < 100 && password === password2){
+            $.ajax({
+                url: "/user/register",
+                type: "POST",
+                data: $("#user-login-form").serialize(),
+                dataType: "JSON",
+                success: function (json) {
+                    // console.log(json);
+                    if(json.code === 200){
+                        // alert(json.message);
+                        location.href = "index.html"
+                    }else{
+                        alert(json.message);
+                    }
+                }
+            });
+        }else{
+            alert('请校准信息的正确性')
+        }
+    });
+
+</script>
+</html>

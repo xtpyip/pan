@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- 页面meta -->
+
+    <meta charset="utf-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>简易楼盘销售网</title>
+
+    
+
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+    <!-- 引入样式 -->
+
+    <link rel="stylesheet" href="../../plugins/elementui/index.css">
+
+    <link rel="stylesheet" href="../../plugins/font-awesome/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="../../css/style.css">
+
+
+</head>
+<body>
+<div class="content-header">
+    <h3 align="center">易楼网后台管理中心</h3>
+    <h4 style="display: inline;font-width: 18px; ">楼盘管理</h4>
+    <a href="user.html">用户管理</a>
+    <a href="address.html">地址管理</a>
+    <a href="order.html">订单管理</a>
+    <a href="back.html">用户反馈</a>
+</div>
+<div id="app">
+    <h5 style="float: right;margin-right: 50px">{{adminName}}</h5>>
+    <div class="app-container">
+        <div class="box">
+            <div class="filter-container">
+                <el-form :inline="true" :model="formInline" class="demo-form-inline">
+                    <el-form-item>
+                      <el-input v-model="formInline.area" placeholder="楼盘面积"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                      <el-input v-model="formInline.name" placeholder="楼盘种类"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                      <el-input v-model="formInline.num" placeholder="几居室"></el-input>
+                    </el-form-item>
+                    <el-form-item >
+                      <el-select v-model="formInline.status" placeholder="楼盘状态">
+                        <el-option label="在售" value="1"></el-option>
+                        <el-option label="下架" value="2"></el-option>
+                      </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                      <el-button type="primary" @click="getAll()">查询</el-button>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+                    </el-form-item>
+                  </el-form>
+            </div>
+
+            <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+
+                <el-table-column type="index" align="center" label="序号"></el-table-column>
+                <el-table-column prop="name" label="楼盘种类" align="center"></el-table-column>
+                <el-table-column prop="title" label="楼盘标题" align="center"></el-table-column>
+                <el-table-column prop="address" label="楼盘地址" align="center"></el-table-column>
+                <el-table-column prop="area" label="楼盘面积" align="center"></el-table-column>
+                <el-table-column prop="status" label="楼盘状态" align="center"></el-table-column>
+                <el-table-column prop="price" label="楼盘单价" align="center"></el-table-column>
+                <el-table-column prop="num" label="楼盘几居" align="center"></el-table-column>
+                <el-table-column prop="priority" label="优先级" align="center"></el-table-column>
+                <el-table-column label="操作" align="center">
+                    <template slot-scope="scope">
+                        <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+                        <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+                    </template>
+
+                </el-table-column>
+
+            </el-table>
+
+            <!--分页组件-->
+            <div class="pagination-container">
+
+                <el-pagination
+                        class="pagiantion"
+
+                        @current-change="handleCurrentChange"
+
+                        :current-page="pagination.currentPage"
+
+                        :page-size="pagination.pageSize"
+
+                        layout="total, prev, pager, next, jumper"
+
+                        :total="pagination.total">
+
+                </el-pagination>
+
+            </div>
+
+            <!-- 新增标签弹层 -->
+
+            <div class="add-form">
+                <el-dialog title="新增楼盘" :visible.sync="dialogFormVisible">
+                    <el-form ref="dataAddForm" :model="formData" :rules="rules" label-position="right" label-width="100px">
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘种类" prop="name">
+                                    <el-select v-model="formData.name" placeholder="楼盘种类">
+                                        <el-option label="住宅" value="住宅"></el-option>
+                                        <el-option label="别墅" value="别墅"></el-option>
+                                        <el-option label="商铺" value="商铺"></el-option>
+                                        <el-option label="公寓" value="公寓"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘单价" prop="price">
+                                    <el-select v-model="formData.price" placeholder="楼盘单价">
+                                        <el-option label="8000" value="8000"></el-option>
+                                        <el-option label="8500" value="8500"></el-option>
+                                        <el-option label="8900" value="8900"></el-option>
+                                        <el-option label="9000" value="9000"></el-option>
+                                        <el-option label="9800" value="9800"></el-option>
+                                        <el-option label="10000" value="10000"></el-option>
+                                        <el-option label="11000" value="11000"></el-option>
+                                        <el-option label="12000" value="12000"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘标题" prop="title" placeholder="楼盘标题">
+                                    <el-input v-model="formData.title"/>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘地址" prop="address" placeholder="楼盘地址">
+                                    <el-input v-model="formData.address"/>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘面积" prop="area">
+                                    <el-select v-model="formData.area" placeholder="楼盘面积">
+                                        <el-option label="80" value="80"></el-option>
+                                        <el-option label="100" value="100"></el-option>
+                                        <el-option label="150" value="150"></el-option>
+                                        <el-option label="180" value="180"></el-option>
+                                        <el-option label="210" value="210"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12" >
+                                <el-form-item label="楼盘状态" prop="status">
+                                    <el-select v-model="formData.status" placeholder="楼盘状态">
+                                        <el-option label="上架" value="1"></el-option>
+                                        <el-option label="下架" value="2"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                                
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘几居" prop="num">
+                                    <el-select v-model="formData.num" placeholder="楼盘几居">
+                                        <el-option label="一居" value="1"></el-option>
+                                        <el-option label="二居" value="2"></el-option>
+                                        <el-option label="三居" value="3"></el-option>
+                                        <el-option label="四居" value="4"></el-option>
+                                        <el-option label="五居" value="5"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="优先级" prop="priority">
+                                    <el-select v-model="formData.priority" placeholder="优先级">
+                                        <el-option label="一" value="1"></el-option>
+                                        <el-option label="二" value="2"></el-option>
+                                        <el-option label="三" value="3"></el-option>
+                                        <el-option label="四" value="4"></el-option>
+                                        <el-option label="五" value="5"></el-option>
+                                        <el-option label="六" value="6"></el-option>
+                                        <el-option label="七" value="7"></el-option>
+                                        <el-option label="八" value="8"></el-option>
+                                        <el-option label="九" value="9"></el-option>
+                                        <el-option label="十" value="10"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="cancel()">取消</el-button>
+                        <el-button type="primary" @click="handleAdd()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+            <!-- 编辑标签弹层 -->
+            <div class="add-form">
+                <el-dialog title="编辑检查项" :visible.sync="dialogFormVisible4Edit">
+                    <el-form ref="dataEditForm" :model="formData" :rules="rules" label-position="right" label-width="100px">
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘种类" prop="name">
+                                    <el-select v-model="formData.name" placeholder="楼盘种类">
+                                        <el-option label="住宅" value="住宅"></el-option>
+                                        <el-option label="别墅" value="别墅"></el-option>
+                                        <el-option label="商铺" value="商铺"></el-option>
+                                        <el-option label="公寓" value="公寓"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘单价" prop="price">
+                                    <el-select v-model="formData.price" placeholder="楼盘单价">
+                                        <el-option label="8000" value="8000"></el-option>
+                                        <el-option label="8500" value="8500"></el-option>
+                                        <el-option label="8900" value="8900"></el-option>
+                                        <el-option label="9000" value="9000"></el-option>
+                                        <el-option label="9800" value="9800"></el-option>
+                                        <el-option label="10000" value="10000"></el-option>
+                                        <el-option label="11000" value="11000"></el-option>
+                                        <el-option label="12000" value="12000"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘标题" prop="title" placeholder="楼盘标题">
+                                    <el-input v-model="formData.title"/>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘地址" prop="address" placeholder="楼盘地址">
+                                    <el-input v-model="formData.address"/>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘面积" prop="area">
+                                    <el-select v-model="formData.area" placeholder="楼盘面积">
+                                        <el-option label="80" value="80"></el-option>
+                                        <el-option label="100" value="100"></el-option>
+                                        <el-option label="150" value="150"></el-option>
+                                        <el-option label="180" value="180"></el-option>
+                                        <el-option label="210" value="210"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12" >
+                                <el-form-item label="楼盘状态" prop="status">
+                                    <el-select v-model="formData.status" placeholder="楼盘状态">
+                                        <el-option label="上架" value="1"></el-option>
+                                        <el-option label="下架" value="2"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                                
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="楼盘几居" prop="num">
+                                    <el-select v-model="formData.num" placeholder="楼盘几居">
+                                        <el-option label="一居" value="1"></el-option>
+                                        <el-option label="二居" value="2"></el-option>
+                                        <el-option label="三居" value="3"></el-option>
+                                        <el-option label="四居" value="4"></el-option>
+                                        <el-option label="五居" value="5"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="优先级" prop="priority">
+                                    <el-select v-model="formData.priority" placeholder="优先级">
+                                        <el-option label="一" value="1"></el-option>
+                                        <el-option label="二" value="2"></el-option>
+                                        <el-option label="三" value="3"></el-option>
+                                        <el-option label="四" value="4"></el-option>
+                                        <el-option label="五" value="5"></el-option>
+                                        <el-option label="六" value="6"></el-option>
+                                        <el-option label="七" value="7"></el-option>
+                                        <el-option label="八" value="8"></el-option>
+                                        <el-option label="九" value="9"></el-option>
+                                        <el-option label="十" value="10"></el-option>
+                                      </el-select>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                    </el-form>
+
+                    <div slot="footer" class="dialog-footer">
+
+                        <el-button @click="cancel()">取消</el-button>
+
+                        <el-button type="primary" @click="handleEdit()">确定</el-button>
+
+                    </div>
+
+                </el-dialog>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+<div class="content-header">
+    <h3 align="center">请联系我：188 xxxx xxxx</h3>
+</div>
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="../../js/vue.js"></script>
+
+<script src="../../plugins/elementui/index.js"></script>
+
+<script type="text/javascript" src="../../js/jquery.min.js"></script>
+
+<script src="../../js/axios-0.18.0.js"></script>
+
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data:{
+            formInline: { //作模糊查询时使用
+                area: '',
+                address: '',
+                price: '',
+                name: '',
+                num: '',
+                status: ''
+            },
+            dataList: [],//当前页要展示的列表数据
+            dialogFormVisible: false,//添加表单是否可见
+            dialogFormVisible4Edit:false,//编辑表单是否可见
+            adminName: '',
+            formData: {},//表单数据
+            rules: {//校验规则
+                title: [{ required: true, message: '楼盘标题为必填项', trigger: 'blur' }],
+                area: [{ required: true, message: '楼盘面积为必填项', trigger: 'blur' }],
+                address: [{ required: true, message: '楼盘地址为必填项', trigger: 'blur' }],
+                price: [{ required: true, message: '楼盘单价为必填项', trigger: 'blur' }],
+                name: [{ required: true, message: '楼盘种类为必填项', trigger: 'blur' }],
+                num: [{ required: true, message: '楼盘几居为必填项', trigger: 'blur' }],
+                status: [{ required: true, message: '楼盘状态为必填项', trigger: 'blur' }],
+                priority: [{ required: true, message: '优先级为必填项', trigger: 'blur' }]
+            },
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize:10,//每页显示的记录数
+                total:0,//总记录数
+                area: '',
+                address: '',
+                price: '',
+                name: '',
+                num: '',
+                status: '',
+                title: '',
+                priority: ''
+            }
+        },
+
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            //页面加载完毕后调用getAll函数
+            this.adminName = JSON.parse(sessionStorage.getItem("adminName"));
+            this.getAll();
+        },
+
+        methods: {
+            //列表
+            getAll() {
+                console.log("run")
+                param = "?area="+this.formInline.area;
+                param += "&name="+this.formInline.name;
+                param += "&num="+this.formInline.num;
+                param += "&status="+this.formInline.status;
+
+                 //console.log("run...");//发送异步请求
+                // axios.get("/products").then((res)=>{
+                //     //console.log(res.data);
+                //     this.dataList = res.data.e;
+                // });
+                axios.get("/products/"+this.pagination.currentPage+"/"+this.pagination.pageSize+param).then((res)=>{
+                    //console.log(res.data);
+                    this.pagination.pageSize=res.data.e.size;
+                    this.pagination.currentPage=res.data.e.current;
+                    this.pagination.total=res.data.e.total;
+                    this.dataList = res.data.e.records;
+                });
+            },
+
+            //弹出添加窗口
+            handleCreate() {
+                this.dialogFormVisible = true;
+                this.resetForm();
+            },
+
+            //重置表单
+            resetForm() {
+                this.formData = {};
+            },
+            //添加
+            handleAdd () {
+                axios.post("/products",this.formData).then((res)=>{
+                    if(res.data.code === 200){
+                        this.dialogFormVisible = false;
+                        this.$message.success(res.data.message);
+                    }else{
+                        this.$message.error(res.data.message);
+                    }
+                }).finally(()=>{
+                    this.getAll();
+                });
+            },
+
+            //取消
+            cancel(){
+                this.dialogFormVisible = false;
+                this.dialogFormVisible4Edit = false;
+                this.$message.info("当前操作取消");
+            },
+            // 删除
+            handleDelete(row) {
+                // console.log(row);
+                this.$confirm("此操作永久删除当前信息，是否继续执行删除操作？","提示",{type:"info"}).then(()=> {
+                    axios.delete("/products/" + row.id).then((res) => {
+                        if (res.data.code === 200) {
+                            this.$message.success(res.data.message);
+                        } else {
+                            this.$message.error(res.data.message);
+                        }
+                    }).finally(() => {
+                        this.getAll();
+                    });
+                }).catch(()=>{
+                    this.$message.info("删除操作已取消");
+                });
+            },
+
+            //弹出编辑窗口
+            handleUpdate(row) {
+                axios.get("/products/"+row.id).then((res)=>{
+                    if(res.data.code === 200 && res.data.e != null){
+                        this.dialogFormVisible4Edit=true;
+                        this.formData = res.data.e;
+                    }else{
+                        this.$message.error("数据同步失败，自动刷新");
+                    }
+                }).finally(()=>{
+                    // 2.返回所有数据的页面
+                    this.getAll();
+                });
+
+            },
+
+            //修改
+            handleEdit() {
+                axios.put("/products",this.formData).then((res)=>{
+                    // 判断当前操作是否成功
+                    if(res.data.code === 200){
+                        // 1.关闭弹层
+                        this.dialogFormVisible4Edit = false;
+                        this.$message.success("修改成功");
+                    }else{
+                        this.$message.error("修改失败");
+                    }
+                }).finally(()=>{
+                    // 2.返回所有数据的页面
+                    this.getAll();
+                });
+            },
+
+            //分页查询
+
+            //切换页码
+            handleCurrentChange(currentPage) {
+                //修改页码值为当前选中的页码值
+                this.pagination.currentPage = currentPage;
+                //执行查询
+                this.getAll();
+            }
+            //条件查询
+        }
+    })
+</script>
+<script>
+    if(!JSON.parse(sessionStorage.getItem("adminName"))){
+        alert("请先登陆");
+        location.href="../login.html";
+    }
+</script>
+</html>

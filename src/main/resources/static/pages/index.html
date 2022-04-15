@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <style>
+        .bigHeader {
+            border: 1px solid #807c7c;
+            background-color: rgb(241,244,243);
+            height: 180px;
+            width: 300px;
+            margin: 100px auto;
+        }
+        .indexHeader{
+            /*background-color: red;*/
+            margin: 5px 0 5px 10px;
+        }
+        .indexHeader p {
+            padding: 3px 0 3px 15px;
+            font-weight: bold;
+        }
+        .indexHeader label {
+            /*background-color: black;*/
+            margin-left: 10px;
+        }
+        .indexHeader input {
+            margin: 3px 0;
+            padding-left: 5px;
+        }
+        .indexButton {
+            margin: 15px 0 5px 25px;
+        }
+        .indexButton button {
+            margin: 0 15px;
+        }
+
+    </style>
+</head>
+<body style="background-color: #8c939d">
+
+<div  class="bigHeader">
+    <div class="indexHeader">
+        <p>欢迎来到易楼网前台登陆中心</p>
+        <form id="user-login-form">
+            <label>用户:&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="text" name="name" id="name" required placeholder="请输入你的用户名">
+            </label><br>
+            <label>密码:&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="password" name="password" id="password" required placeholder="请输入你的密码">
+            </label><br>
+        </form>
+    </div>
+    <div class="indexButton">
+        <button id="login-btn">登陆</button>
+        <button id="reg-btn">注册</button>
+        <button id="adm-log-btn">后台登陆</button>
+    </div>
+
+
+</div>
+</body>
+<script>
+    $('#reg-btn').click(function(){
+        location.href = "regist.html"
+    })
+    $('#adm-log-btn').click(function () {
+        location.href = "login.html"
+    })
+    $("#login-btn").click(function () {
+        const name = $('#name').val();
+        const password = $('#password').val();
+        if(name.trim() && password.trim()){
+            $.ajax({
+                url: "/user/login",
+                type: "POST",
+                data: $("#user-login-form").serialize(),
+                dataType: "JSON",
+                success: function (json) {
+                    console.log(json);
+                    if(json.code === 200){
+                        // console.log(json.e)
+                        window.sessionStorage.setItem("username",JSON.stringify(json.e.name));
+                        window.sessionStorage.setItem("uid",JSON.stringify(json.e.id));
+                        window.sessionStorage.setItem("uHead",JSON.stringify(json.e.img));
+                        alert(json.message);
+                        location.href="user/main.html";
+                    }else{
+                        alert(json.message);
+                    }
+                }
+            });
+        }else{
+            alert('请校验信息的正确性')
+        }
+    });
+</script>
+</html>

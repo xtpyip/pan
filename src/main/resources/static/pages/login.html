@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>简易楼盘销售网</title>
+    <script type="text/javascript" src="../js/jquery.min.js"></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .bigHeader {
+            /*background-color: pink;*/
+            border: 1px solid #807c7c;
+            background-color: rgb(241,244,243);
+            height: 180px;
+            width: 300px;
+            margin: 100px auto;
+        }
+        .loginHeader{
+            /*background-color: red;*/
+            margin: 5px 0 5px 10px;
+        }
+        .loginHeader p {
+            padding: 3px 0 3px 15px;
+            font-weight: bold;
+        }
+        .loginHeader label {
+            /*background-color: black;*/
+            margin-left: 10px;
+        }
+        .loginHeader input {
+            margin: 3px 0;
+            padding-left: 5px;
+        }
+        .loginButton {
+            margin: 15px 0 5px 25px;
+        }
+        .loginButton button {
+            margin: 0 15px;
+        }
+    </style>
+</head>
+<body style="background-color: #8c939d">
+<div class="bigHeader" >
+    <div class="loginHeader">
+        <p>欢迎来到易楼网后台登陆中心</p>
+        <form id="admin-login-form">
+            <label>用户: &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="text" name="name" id="name" required placeholder="请输入你的用户名">
+            </label><br>
+            <label>密码: &nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="password" name="password" id="password" required placeholder="请输入你的密码">
+            </label><br>
+        </form>
+    </div>
+    <div class="loginButton">
+        <button id="login-btn">后台登陆</button>
+        <button id="goLogin">用户登陆</button>
+    </div>
+
+</div>
+</body>
+<script>
+    $('#goLogin').click(function(){
+        location.href='index.html'
+    })
+    $("#login-btn").click(function () {
+        const name = $('#name').val();
+        const password = $('#password').val();
+        if(name.trim() && password.trim()){
+            $.ajax({
+                url: "/admins",
+                type: "POST",
+                data: $("#admin-login-form").serialize(),
+                dataType: "JSON",
+                success: function (json) {
+                    // console.log(json);
+                    if(json.code === 200){
+                        alert("登陆成功");
+                        console.log(JSON.stringify(json.e.name));
+                        window.sessionStorage.setItem("adminName",JSON.stringify(json.e.name));
+                        location.href="admin/product.html";
+                    }
+                }
+            });
+        }else{
+            alert('请校验信息的正确性')
+        }
+    });
+</script>
+</html>

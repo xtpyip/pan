@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>简易楼盘销售网</title>
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../../plugins/elementui/index.css">
+    <link rel="stylesheet" href="../../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .content-header h1 {
+            text-align: center;
+            margin-left: 10px;
+        }
+        .myHeader {
+            height: 40px;
+            /*background-color: pink;*/
+        }
+        .headerNav {
+            /*background-color: black;*/
+            float: left;
+            width: 880px;
+        }
+        .headerNav label {
+            float: left;
+            margin-left: 40px;
+        }
+        .headerInfo{
+            /*background-color: blue;*/
+            /*height: 40px;*/
+            float: right;
+            width: 300px;
+        }
+        a,label {
+            line-height: 40px;
+        }
+        a:hover{
+          color: black;
+        }
+        img {
+            height: 40px;
+        }
+    </style>
+</head>
+<body >
+
+<div id="app">
+    <div class="content-header">
+        <h1>易楼网在线销售系统</h1>
+    </div>
+    <div class="myHeader">
+        <div class="headerNav">
+            <label><a href="#">首页</a></label>
+            <label><a href="cart.html">我的购物车</a></label>
+            <label><a href="info.html">个人信息</a></label>
+            <label><a href="order.html">我的订单</a></label>
+            <label><a @click.prevent="handleCreate()">添加银行卡</a></label>
+            <label><a @click.prevent="handleDrop()">解除银行卡</a></label>
+            <label><a @click.prevent="handleCreate4()" >反馈信息</a></label>
+            <label><a href="#">关于我们</a></label>
+        </div>
+        <div class="headerInfo">
+            <label style="float:right;margin-right: 20px;margin-bottom: 10px;"><button @click="destoryInfo">退出登陆</button></label>
+            <label style="float:right;margin-right: 20px;margin-bottom: 10px;">{{username}}</label>
+            <label style="float:right;margin-right: 20px;margin-bottom: 10px;"><img :src="uHead" alt="头像"></img></label>
+        </div>
+    </div>
+    <div class="app-container" >
+        <div class="box">
+            <div class="filter-container">
+                <el-form :inline="true" :model="formInline" class="demo-form-inline">
+                    <el-form-item>
+                        <el-input v-model="formInline.area" placeholder="楼盘面积"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-select v-model="formInline.name" placeholder="楼盘种类">
+                            <el-option label="住宅" value="住宅"></el-option>
+                            <el-option label="商铺" value="商铺"></el-option>
+                            <el-option label="别墅" value="别墅"></el-option>
+                            <el-option label="公寓" value="公寓"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-input v-model="formInline.num" placeholder="几居室"></el-input>
+                    </el-form-item>
+                    <el-form-item >
+                        <el-select v-model="formInline.status" placeholder="楼盘状态">
+                            <el-option label="在售" value="1"></el-option>
+                            <el-option label="下架" value="2"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="getAll()">查询</el-button>
+                        <el-button type="primary"><a href="main.html">刷新</a> </el-button>
+                        <el-button type="primary" class="butT" @click="handleCreate4()">反馈</el-button>
+                    </el-form-item>
+                </el-form>
+            </div>
+            <el-table size="small" current-row-key="id" :data="dataList" stripe highlight-current-row>
+                <!--<el-table-column type="index" align="center" label="序号"></el-table-column>-->
+                <el-table-column prop="name" label="楼盘种类" align="center"></el-table-column>
+                <el-table-column prop="title" label="楼盘标题" align="center"></el-table-column>
+                <el-table-column prop="address" label="楼盘地址" align="center"></el-table-column>
+                <!--<el-table-column prop="image" label="实景图片" :src="bg1.png" align="center"></el-table-column>-->
+                <el-table-column label="实景图片">
+                    <template slot-scope="scope">
+                        <img :src="scope.row.image" alt="这是图片">
+                    </template>
+                </el-table-column>
+                <el-table-column prop="area" label="楼盘面积" align="center"></el-table-column>
+                <el-table-column prop="status" label="楼盘状态" align="center" :formatter="stateFormat"></el-table-column>
+                <el-table-column prop="price" label="楼盘单价" align="center"></el-table-column>
+                <el-table-column prop="num" label="楼盘几居" align="center"></el-table-column>
+                <el-table-column label="购物车操作" align="center">
+                    <template slot-scope="scope">
+                        <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">加入</el-button>
+                        <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <div class="add-form">
+                <el-dialog title="绑定银行卡" :visible.sync="dialogFormVisible">
+                    <el-form ref="dataAddForm" :model="formDataBank" :rules="rules" label-position="right" label-width="100px">
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="银行卡帐号" prop="title" placeholder="银行卡帐号">
+                                    <el-input v-model="formDataBank.id"/>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="12">
+                                <el-form-item label="银行卡密码" prop="address" placeholder="银行卡密码">
+                                    <el-input v-model="formDataBank.password"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="cancel()">取消</el-button>
+                        <el-button type="primary" @click="handleAdd()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+            <div class="add-form">
+                <el-dialog title="反馈信息" :visible.sync="dialogForm4Visible">
+                    <el-form ref="dataAddForm" :model="formDataDescription" :rules="rules" label-position="right" label-width="100px">
+                        <el-row>
+                            <el-col :span="12">
+                                <el-form-item label="反馈信息" prop="address" placeholder="反馈信息">
+                                    <el-input required type="text" v-model="formDataDescription.description"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="cancel()">取消</el-button>
+                        <el-button type="primary" @click="handleAddBack()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+            <!--分页组件-->
+            <div class="pagination-container">
+                <el-pagination
+                        class="pagiantion"
+                        @current-change="handleCurrentChange"
+                        :current-page="pagination.currentPage"
+                        :page-size="pagination.pageSize"
+                        layout="total, prev, pager, next, jumper"
+                        :total="pagination.total">
+                </el-pagination>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content-header">
+    <h3 align="center">请联系我：188 xxxx xxxx</h3>
+</div>
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="../../js/vue.js"></script>
+<script src="../../plugins/elementui/index.js"></script>
+<script type="text/javascript" src="../../js/jquery.min.js"></script>
+<script src="../../js/axios-0.18.0.js"></script>
+<script>
+    var vue = new Vue({
+        el: '#app',
+        data:{
+            formInline: { //作模糊查询时使用
+                area: '',
+                address: '',
+                price: '',
+                name: '',
+                num: '',
+                status: ''
+            },
+            formDataDescription:{},
+            formDataBank: {
+                id: 0,
+                description: ''
+            },
+            rules: {//校验规则
+                id: [{ required: true, message: '银行卡帐号为必填项', trigger: 'blur' }],
+                password: [{ required: true, message: '银行卡密码为必填项', trigger: 'blur' }]
+            },
+            username: '',
+            uid:'',
+            uHead: '',
+            imageRoute: '',
+            dialogFormVisible: false,
+            dialogForm4Visible: false,
+            dataList: [],//当前页要展示的列表数据
+            formData: {},//表单数据
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize:10,//每页显示的记录数
+                total:0,//总记录数
+                area: '',
+                address: '',
+                image:'',
+                price: '',
+                name: '',
+                num: '',
+                status: '',
+                title: '',
+                priority: ''
+            }
+        },
+
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            //页面加载完毕后调用getAll函数
+            this.username = JSON.parse(sessionStorage.getItem("username"));
+            // console.log(this.username);
+            this.uid = JSON.parse(sessionStorage.getItem("uid"));
+            this.uHead = JSON.parse(sessionStorage.getItem("uHead"));
+            this.getAll();
+        },
+
+        methods: {
+            stateFormat(row,column){
+                if(row.status === 1){
+                    return "在售"
+                }else{
+                    return "售完"
+                }
+            },
+            //列表
+            getAll() {
+                //console.log("run")
+                param = "?area="+this.formInline.area;
+                param += "&name="+this.formInline.name;
+                param += "&num="+this.formInline.num;
+                param += "&status="+this.formInline.status;
+
+                //console.log("run...");//发送异步请求
+                // axios.get("/products").then((res)=>{
+                //     //console.log(res.data);
+                //     this.dataList = res.data.e;
+                // });
+                axios.get("/products/"+this.pagination.currentPage+"/"+this.pagination.pageSize+param).then((res)=>{
+                    console.log(res.data);
+                    this.pagination.pageSize=res.data.e.size;
+                    this.pagination.currentPage=res.data.e.current;
+                    this.pagination.total=res.data.e.total;
+                    this.dataList = res.data.e.records;
+                });
+            },
+
+
+            //重置表单
+            resetForm() {
+                this.formData = {};
+            },
+            handleCreate() {
+                if(window.sessionStorage.getItem("bankId") !== "null"){
+                    // 存在银行卡信息
+                    this.$message.error("你已绑定了银行卡，若要更换请先解除！！")
+                }else{
+                    this.dialogFormVisible = true;
+                    this.resetForm();
+                }
+            },
+            handleCreate4() {
+                this.dialogForm4Visible = true;
+                this.resetForm();
+            },
+            // 解绑银行卡信息
+            handleDrop(){
+                if(window.sessionStorage.getItem("bankId") !== "null"){
+                    // 存在银行卡信息
+                    // console.log(window.sessionStorage.getItem("bankId"))
+                    // console.log(window.sessionStorage.getItem("uid"))
+                    // console.log(this.uid)
+                    this.$confirm("此操作永久删除当前信息，是否继续执行删除操作？","提示",{type:"info"}).then(()=> {
+                        axios.get("/banks/dropInfo/" + this.uid).then((res) => {
+                            console.log(res);
+                            if(res.data.code === 200){
+                                this.$message.success(res.data.message);
+                                window.sessionStorage.setItem("bankId", null)
+                            }else{
+                                this.$message.error(res.data.message);
+                            }
+                        })
+                    }).catch(()=>{
+                        this.$message.info("删除操作已取消");
+                    });
+                }else{
+                    this.$message.error("请先绑定银行卡信息")
+                }
+            },
+            //添加
+            handleAdd () {
+                    // 没有银行卡信息
+                // console.log($.isNumeric(this.formDataBank.id))
+                // console.log((this.formDataBank.password) === null)
+                    if($.isNumeric(this.formDataBank.id) && this.formDataBank.password ){
+                        this.formDataBank.uid = this.uid;
+                        axios.post("/banks/add",this.formDataBank).then((res)=>{
+                            console.log(res);
+                            if(res.data.code === 200){
+                                window.sessionStorage.setItem("bankId",this.formDataBank.id);
+                                this.$message.success(res.data.message);
+                            }else{
+                                this.$message.error(res.data.message);
+                            }
+                        }).finally(()=>{
+                            this.dialogFormVisible = false;
+                            this.getAll();
+                        });
+                    }else{
+                        this.$message.info("操作取消")
+                    }
+            },
+            handleAddBack () {
+                this.formDataDescription.id=this.uid;
+                console.log(this.formDataDescription.description === "");
+                console.log(this.formDataDescription.description);
+                if(this.formDataDescription.description !== ""){
+                    axios.post("/backs",this.formDataDescription).then((res)=>{
+                        console.log(res);
+                        if(res.data.code === 200){
+                            this.$message.success(res.data.message);
+                        }else{
+                            this.$message.error(res.data.message);
+                        }
+                    }).finally(()=>{
+                        this.dialogForm4Visible = false;
+                        this.getAll();
+                    });
+                }else{
+                    this.$message.error("请填写反馈信息")
+                }
+
+            },
+
+            //取消
+            cancel(){
+                this.dialogFormVisible = false;
+                this.dialogForm4Visible = false;
+                this.dialogFormVisible4Edit = false;
+                this.$message.info("当前操作取消");
+            },
+            // 删除
+            handleDelete(row) {
+                // console.log(row);
+                this.$confirm("此操作永久删除当前信息，是否继续执行删除操作？","提示",{type:"info"}).then(()=> {
+                    param = "?name="+this.username;
+                    param += "&id="+this.uid;
+                    axios.get("/carts/delete/"+row.id+param).then((res)=>{
+                        //console.log(row);
+                        if(res.data.code === 400 && !res.data.e){
+                            window.sessionStorage.setItem("bindOr",true);
+                        }else if(res.data.code === 200 && res.data.e) {
+                            this.$message.success(res.data.message);
+                        }else{
+                            this.$message.error(res.data.message);
+                        }
+                    }).finally(()=>{
+                        // 2.返回所有数据的页面
+                        this.getAll();
+                    });
+                }).catch(()=>{
+                    this.$message.info("删除操作已取消");
+                });
+            },
+
+            //弹出编辑窗口
+            handleUpdate(row) {
+                param = "?name="+this.username;
+                param += "&id="+this.uid;
+                axios.get("/carts/add/"+row.id+param).then((res)=>{
+                    //console.log(row);
+                    if(res.data.code === 401 && !res.data.e){
+                       this.$message.error(res.data.message);
+                    }else if(res.data.code === 200 && res.data.e) {
+                        this.$message.success(res.data.message);
+                    }else{
+                            this.$message.error(res.data.message);
+                        }
+                }).finally(()=>{
+                    // 2.返回所有数据的页面
+                    this.getAll();
+                });
+
+            },
+            //分页查询
+
+            //切换页码
+            handleCurrentChange(currentPage) {
+                //修改页码值为当前选中的页码值
+                this.pagination.currentPage = currentPage;
+                //执行查询
+                this.getAll();
+            },
+            //条件查询
+            destoryInfo(){
+
+            }
+        }
+    })
+</script>
+
+<script>
+    if(!JSON.parse(sessionStorage.getItem("username"))){
+        alert("请先登陆");
+        location.href="../index.html";
+    }
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        //alert('info')
+        $.ajax({
+            url: "/banks/" + JSON.parse(sessionStorage.getItem("uid")),
+            type: "GET",
+            dataType: "JSON",
+            success: function (json) {
+                if (json.code === 200) {
+                    console.log("银行卡信息有");
+                    window.sessionStorage.setItem("bankId",JSON.stringify(json.e.id));
+                } else {
+                    console.log("银行卡信息无");
+                }
+            }
+        });
+    });
+</script>
+
+</html>
